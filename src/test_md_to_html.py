@@ -1,13 +1,59 @@
 import unittest
-from md_to_html import (extract_markdown_links, extract_markdown_images, 
+from md_to_html import (text_node_to_html_node, extract_markdown_links, extract_markdown_images, 
                         split_nodes_image, split_nodes_link, 
                         split_nodes_delimiter, text_to_textnodes,
-                        markdown_to_blocks
+                        markdown_to_blocks, block_to_block_type,
+                        block_to_html_node, markdown_to_html_node
                         )
-from textnode import TextNode, TextType
+from textnode import TextNode, TextType, BlockType
+from htmlnode import ParentNode, LeafNode
 
 
 class TestMDtoHTMLNode(unittest.TestCase):
+
+    # text_node_to_html_node() test cases
+
+    def test_text_node_to_html_node_text(self):
+        node = TextNode("This is a text node", TextType.TEXT)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, None)
+        self.assertEqual(html_node.value, "This is a text node")
+    
+    def test_text_node_to_html_node_bold(self):
+        node = TextNode("This is a bold node", TextType.BOLD)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, 'b')
+        self.assertEqual(html_node.value, "This is a bold node")
+    
+    def test_text_node_to_html_node_italic(self):
+        node = TextNode("This is an italic node", TextType.ITALIC)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, 'i')
+        self.assertEqual(html_node.value, "This is an italic node")
+
+    def test_text_node_to_html_node_code(self):
+        node = TextNode("This is a code node", TextType.CODE)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, 'code')
+        self.assertEqual(html_node.value, "This is a code node")
+    
+    def test_text_node_to_html_node_link(self):
+        node = TextNode("This is a link node", TextType.LINK, "https://www.boot.dev/")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, 'a')
+        self.assertEqual(html_node.value, "This is a link node")
+        self.assertEqual(html_node.props, {"href": "https://www.boot.dev/"})
+
+    def test_text_node_to_html_node_image(self):
+        node = TextNode("This is an image node", TextType.IMAGE, "https://www.boot.dev/img/bootdev-logo-full-small.webp")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, 'img')
+        self.assertEqual(html_node.value, '')
+        self.assertEqual(html_node.props, {"src": "https://www.boot.dev/img/bootdev-logo-full-small.webp", "alt": "This is an image node"})
+    
+    def test_text_node_to_html_node_non_text_type(self):
+        node = TextNode("This is an invalid node", 'number')
+        self.assertRaises(ValueError, text_node_to_html_node, node)
 
     # split_nodes_delimiter() test cases
 
@@ -659,6 +705,311 @@ This is the same paragraph on a new line
                 "- This is a list\n- with items",
             ],
         )
+
+    # block_to_block_type() testcases
+
+    def test_block_heading(self):
+        text = "# This is a heading"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.HEADING, blocktype)
+    
+    def test_block_heading2(self):
+        text = "## This is an h2 heading"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.HEADING, blocktype)
+
+    def test_block_multiline_heading(self):
+        text = "# This is a heading\n## This is an h2 heading"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.HEADING, blocktype)
+    
+    def test_block_code(self):
+        text = "```\nThis is a code block.\n```"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.CODE, blocktype)
+
+    def test_block_quote(self):
+        text = ">This is a quote block"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.QUOTE, blocktype)    
+
+    def test_block_quote_multiline(self):
+        text = ">This is a quote block\n>Another quote"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.QUOTE, blocktype) 
+
+    def test_block_unordered_list(self):
+        text = "- This is\n- an unordered\n- list"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.ULIST, blocktype)
+
+    def test_block_ordered_list(self):
+        text = "1. This is\n2. a ordered\n3. list"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.OLIST, blocktype)
+
+    def test_block_paragraph(self):
+        text = "This is just a paragraph"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.PARAGRAPH, blocktype)
+
+    def test_block_invalid_unordered_list(self):
+        text = "-This is\n-an invalid\n-unordered list"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.PARAGRAPH, blocktype)
+
+    def test_block_invalid_ordered_list(self):
+        text = "2. This is\n2.an invalid\n3. ordered list"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.PARAGRAPH, blocktype)
+
+    def test_block_invalid_ordered_list2(self):
+        text = "1. This is\n3. an invalid\n3. ordered list"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.PARAGRAPH, blocktype)
+
+    def test_block_invalid_ordered_list3(self):
+        text = "1. This is\n2.an invalid\n3. ordered list"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.PARAGRAPH, blocktype)
+    
+    def test_block_ten_ordered_list3(self):
+        text = "1. one\n2. two\n3. three\n4. four\n5. five\n6. six\n7. seven\n8. eight\n9. nine\n10. ten"
+        blocktype = block_to_block_type(text)
+        self.assertEqual(BlockType.OLIST, blocktype)
+
+    # block_to_html_node() testcases
+     # strip() is used for multiline texts as this function is usually called after markdown_to_blocks() which does the strip()
+
+    def test_block_heading(self):
+        text = '## This is a heading 2'
+        result = block_to_html_node(text, BlockType.HEADING)
+        children = [
+            LeafNode(None, 'This is a heading 2')
+        ]
+        self.assertEqual(ParentNode('h2', children), result)
+
+    def test_block_heading_inline_bold(self):
+        text = '## This is a heading 2 with **bold** text'
+        result = block_to_html_node(text, BlockType.HEADING)
+        children = [
+            LeafNode(None, 'This is a heading 2 with '),
+            LeafNode('b', 'bold'),
+            LeafNode(None, ' text')
+        ]
+        self.assertEqual(ParentNode('h2', children), result)
+
+    def test_block_code(self):
+        text = '``` This is a code block ```'
+        result = block_to_html_node(text, BlockType.CODE)
+        children = [
+            LeafNode('code', ' This is a code block ')
+        ]
+        self.assertEqual(ParentNode('pre', children), result)
+
+    def test_block_code_multiline_nested(self):
+        text = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
+        result = block_to_html_node(text.strip(), BlockType.CODE)
+        children = [
+            LeafNode('code', 'This is text that _should_ remain\nthe **same** even with inline stuff\n')
+        ]
+        self.assertEqual(ParentNode('pre', children), result)
+
+    def test_block_quote(self):
+        text = """
+> quote 1
+> quote 2
+> quote 3
+"""
+        result = block_to_html_node(text.strip(), BlockType.QUOTE)
+        children = [
+            LeafNode(None, ' quote 1\n quote 2\n quote 3')
+        ]
+        self.assertEqual(ParentNode('blockquote', children), result)
+
+    def test_block_quote_single(self):
+        text = """
+> quote 1
+"""
+        result = block_to_html_node(text.strip(), BlockType.QUOTE)
+        children = [
+            LeafNode(None, ' quote 1')
+        ]
+        self.assertEqual(ParentNode('blockquote', children), result)
+
+    def test_block_ulist(self):
+        text = """
+- item 1
+- item 2
+- item 3
+- item 4
+"""
+        result = block_to_html_node(text.strip(), BlockType.ULIST)
+        children = [
+            ParentNode('li', [LeafNode(None, 'item 1')]),
+            ParentNode('li', [LeafNode(None, 'item 2')]),
+            ParentNode('li', [LeafNode(None, 'item 3')]),
+            ParentNode('li', [LeafNode(None, 'item 4')]),
+        ]
+        self.assertEqual(ParentNode('ul', children), result)
+
+    def test_block_olist(self):
+        text = """
+1. item 1
+2. item 2
+3. item 3
+4. item 4
+5. item 5
+"""
+        result = block_to_html_node(text.strip(), BlockType.OLIST)
+        children = [
+            ParentNode('li', [LeafNode(None, 'item 1')]),
+            ParentNode('li', [LeafNode(None, 'item 2')]),
+            ParentNode('li', [LeafNode(None, 'item 3')]),
+            ParentNode('li', [LeafNode(None, 'item 4')]),
+            ParentNode('li', [LeafNode(None, 'item 5')]),
+        ]
+        self.assertEqual(ParentNode('ol', children), result)
+
+    def test_block_paragraph(self):
+        text = "This is text in a paragraph that has _italic_ and **bold** text inline"
+        result = block_to_html_node(text, BlockType.PARAGRAPH)
+        children = [
+            LeafNode(None, 'This is text in a paragraph that has '),
+            LeafNode('i', 'italic'),
+            LeafNode(None, ' and '),
+            LeafNode('b', 'bold'),
+            LeafNode(None, ' text inline')
+        ]
+        self.assertEqual(ParentNode('p', children), result)
+
+    def test_block_paragraph_multiline(self):
+        text = """This is text in a
+multiline paragraph
+that has _italic_
+and **bold** text inline
+"""
+        result = block_to_html_node(text.strip(), BlockType.PARAGRAPH)
+        children = [
+            LeafNode(None, 'This is text in a multiline paragraph that has '),
+            LeafNode('i', 'italic'),
+            LeafNode(None, ' and '),
+            LeafNode('b', 'bold'),
+            LeafNode(None, ' text inline')
+        ]
+        self.assertEqual(ParentNode('p', children), result)
+
+    def test_invalid_type(self):
+        text = "This is text"
+        self.assertRaises(TypeError, block_to_html_node, text, 'nonetype')
+
+    # markdown_to_html_node() testcases
+
+    def test_paragraphs(self):
+        md = """
+This is **bolded** paragraph
+text in a p
+tag here
+
+This is another paragraph with _italic_ text and `code` here
+
+    """
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+        )
+
+    def test_codeblock(self):
+        md = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
+        )
+
+    def test_heading_with_paragraphs(self):
+        md = """
+### This is an h3 heading
+
+This is **bolded** paragraph
+text in a p
+tag here
+
+This is another paragraph with _italic_ text and `code` here
+
+    """
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h3>This is an h3 heading</h3><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+        )
+
+    def test_quotes(self):
+        md = """
+>This is a quote from me
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><blockquote>This is a quote from me</blockquote></div>",
+        )
+
+    def test_quotes_multiline(self):
+        md = """
+>This is a 
+>Multiline quote 
+>from me
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><blockquote>This is a \nMultiline quote \nfrom me</blockquote></div>",
+        )
+
+    def test_ulist(self):
+        md = """
+- item 1
+- item 2
+- item 3
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ul><li>item 1</li><li>item 2</li><li>item 3</li></ul></div>",
+        )
+
+    def test_olist(self):
+        md = """
+1. item 1
+2. item 2
+3. item 3
+4. item 4
+5. item 5
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ol><li>item 1</li><li>item 2</li><li>item 3</li><li>item 4</li><li>item 5</li></ol></div>",
+        )
+        
 
 if __name__ == "__main__":
     unittest.main()
