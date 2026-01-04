@@ -48,7 +48,7 @@ def generate_page(from_path: str, template_path: str, dest_path: str, base_path:
     content = markdown_to_html_node(md).to_html()
 
     template_html = template_file.replace('{{ Title }}', title).replace('{{ Content }}', content)
-    html = template_html.replace('href=\"/', f'href=\"{base_path}').replace('src=\"/', f'src=\"{base_path}')
-    
+    html_text = template_html.replace('href=\"/', f'href=\"{base_path}').replace('src=\"/', f'src=\"{base_path}')
+
     with open(dest_path, 'w+') as html:
-        html.write(template_html)
+        html.write(html_text)
