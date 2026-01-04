@@ -3,7 +3,7 @@
 A simple **static site generator built in Python** that converts Markdown files into HTML pages.
 This project was created as a **guided learning project from Boot.dev** to practice Python, file processing, and basic static site generation concepts.
 
-The generated site is currently deployed to **GitHub Pages** (https://github.com/HunterX405/markdown-to-html-static-site).
+The generated site is currently deployed to **GitHub Pages** (https://hunterx405.github.io/markdown-to-html-static-site/).
 
 ---
 
