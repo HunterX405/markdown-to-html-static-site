@@ -3,7 +3,8 @@ from md_to_html import (text_node_to_html_node, extract_markdown_links, extract_
                         split_nodes_image, split_nodes_link, 
                         split_nodes_delimiter, text_to_textnodes,
                         markdown_to_blocks, block_to_block_type,
-                        block_to_html_node, markdown_to_html_node
+                        block_to_html_node, markdown_to_html_node,
+                        extract_title
                         )
 from textnode import TextNode, TextType, BlockType
 from htmlnode import ParentNode, LeafNode
@@ -828,7 +829,7 @@ the **same** even with inline stuff
 """
         result = block_to_html_node(text.strip(), BlockType.QUOTE)
         children = [
-            LeafNode(None, ' quote 1\n quote 2\n quote 3')
+            LeafNode(None, 'quote 1\nquote 2\nquote 3')
         ]
         self.assertEqual(ParentNode('blockquote', children), result)
 
@@ -838,7 +839,7 @@ the **same** even with inline stuff
 """
         result = block_to_html_node(text.strip(), BlockType.QUOTE)
         children = [
-            LeafNode(None, ' quote 1')
+            LeafNode(None, 'quote 1')
         ]
         self.assertEqual(ParentNode('blockquote', children), result)
 
@@ -960,7 +961,7 @@ This is another paragraph with _italic_ text and `code` here
 
     def test_quotes(self):
         md = """
->This is a quote from me
+> This is a quote from me
 """
         node = markdown_to_html_node(md)
         html = node.to_html()
@@ -971,9 +972,9 @@ This is another paragraph with _italic_ text and `code` here
 
     def test_quotes_multiline(self):
         md = """
->This is a 
->Multiline quote 
->from me
+> This is a 
+> Multiline quote 
+> from me
 """
         node = markdown_to_html_node(md)
         html = node.to_html()
@@ -1009,6 +1010,54 @@ This is another paragraph with _italic_ text and `code` here
             html,
             "<div><ol><li>item 1</li><li>item 2</li><li>item 3</li><li>item 4</li><li>item 5</li></ol></div>",
         )
+
+    def test_paragraphs_with_image(self):
+        md = """
+This is **bolded** paragraph
+text in a p
+tag here
+
+This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)
+    """
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is text with an <img src=\"https://i.imgur.com/zjjcJKZ.png\" alt=\"image\"></p></div>",
+        )
+
+    def test_paragraphs_with_link(self):
+        md = """
+This is **bolded** paragraph
+text in a p
+tag here
+
+This is text with a [Boot.dev](https://www.boot.dev/)
+    """
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is text with a <a href=\"https://www.boot.dev/\">Boot.dev</a></p></div>",
+        )
+
+
+    # extract_title() testcases
+
+    def test_title(self):
+        self.assertEqual('Page Title', extract_title('# Page Title '))
+
+    def test_no_h1_header(self):
+        self.assertRaises(ValueError, extract_title, '## Page Title ')
+    
+    def test_no_header(self):
+        self.assertRaises(ValueError, extract_title, ' Page Title ')
+
+    def test_header_with_sharp_text(self):
+        self.assertEqual('#Page Title', extract_title('# #Page Title '))
+
+    def test_title_multiline(self):
+        self.assertEqual('Page Title', extract_title('# Page Title \n\n## Header 2\n# Header 1'))
         
 
 if __name__ == "__main__":

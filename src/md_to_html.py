@@ -4,19 +4,20 @@ from htmlnode import HTMLNode, LeafNode, ParentNode
 
 
 def text_node_to_html_node(text_node: TextNode) -> LeafNode:
+    text = text_node.text
     match text_node.text_type:
         case TextType.TEXT:
-            return LeafNode(None, text_node.text)
+            return LeafNode(None, text)
         case TextType.BOLD:
-            return LeafNode('b', text_node.text)
+            return LeafNode('b', text)
         case TextType.ITALIC:
-            return LeafNode('i', text_node.text)
+            return LeafNode('i', text)
         case TextType.CODE:
-            return LeafNode('code', text_node.text)
+            return LeafNode('code', text)
         case TextType.LINK:
-            return LeafNode('a', text_node.text, {"href": text_node.url})
+            return LeafNode('a', text, {"href": text_node.url})
         case TextType.IMAGE:
-            return LeafNode('img', '', {"src": text_node.url, "alt": text_node.text})
+            return LeafNode('img', '', {"src": text_node.url, "alt": text})
         
         case _:
             raise ValueError("Invalid TextType for TextNode")
@@ -164,7 +165,7 @@ def block_to_html_node(block: str, block_type: BlockType) -> ParentNode:
             children = [LeafNode('code', text)]
             return ParentNode('pre', children)
         case BlockType.QUOTE:
-            text = re.sub(r"^>", '', block, flags=re.MULTILINE)
+            text = re.sub(r"^>\s*", '', block, flags=re.MULTILINE).strip()
             return ParentNode('blockquote', text_to_children(text))
         case BlockType.ULIST:
             text = re.sub(r"^- ", '', block, flags=re.MULTILINE)
@@ -190,3 +191,8 @@ def markdown_to_html_node(markdown: str) -> HTMLNode:
     return ParentNode('div', children)
 
 
+def extract_title(markdown: str):
+    if not markdown.startswith('# '):
+        raise ValueError('No h1 header in markdown.')
+    first_line = markdown.split('\n', 1)[0]
+    return re.sub(r"^# ", '', first_line).strip()
