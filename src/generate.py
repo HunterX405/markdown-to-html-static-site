@@ -1,5 +1,6 @@
 import shutil
 from pathlib import Path
+from jinja2 import Environment, FileSystemLoader, Template
 from md_to_html import extract_title, markdown_to_html_node
 
 def copy_static_files(src_dir_path: Path, dest_dir_path: Path) -> None:
@@ -36,16 +37,21 @@ def generate_page_recursive(dir_path_content: Path, template_path: Path, dest_di
             generate_page_recursive(filename, template_path, dest_path, base_path)
 
 
-def generate_page(from_path: Path, template_path: Path, dest_path: Path, base_path: str) -> None:
+def generate_page(from_path: Path, template_path: str, dest_path: Path, base_path: str) -> None:
     print(f'Generating page \'{from_path}\' -> \'{dest_path}\' | Template: \'{template_path}\'')
 
     md = from_path.read_text()
-    template_file = template_path.read_text()
-    
     title = extract_title(md)
-    content = markdown_to_html_node(md).to_html()
 
-    template_html = template_file.replace('{{ Title }}', title).replace('{{ Content }}', content)
-    html_text = template_html.replace('href=\"/', f'href=\"{base_path}').replace('src=\"/', f'src=\"{base_path}')
+    content: str = markdown_to_html_node(md).to_html()
+    content = content.replace('href=\"/', f'href=\"{base_path}').replace('src=\"/', f'src=\"{base_path}')
 
-    dest_path.write_text(html_text)
+    env = Environment(loader=FileSystemLoader(template_path))
+    template = env.get_template("template.html")
+    data = {
+        "title": title,
+        "content": content,
+        "base_path": base_path
+    }
+    html = template.render(data)
+    dest_path.write_text(html)

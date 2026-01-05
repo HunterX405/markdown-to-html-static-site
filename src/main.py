@@ -11,10 +11,10 @@ def main():
     static_folder = Path("static")
     generate_public(public_folder, static_folder)
 
-    template_file_path = Path("template.html")
+    templates_folder = "templates"
     content_folder = Path("content")
     print('Generating contents...')
-    generate_page_recursive(content_folder, template_file_path, public_folder, base_path)
+    generate_page_recursive(content_folder, templates_folder, public_folder, base_path)
 
 
 if __name__ == '__main__':
