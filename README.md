@@ -135,7 +135,7 @@ The contents of the `docs/` directory are ready for deployment via **GitHub Page
 
 ## 📚 Learning Context
 
-Built as part of the **Boot.dev Python & Software Engineering Track**, then independently refined to follow modern Python engineering best practices.
+Built as part of the **Boot.dev Backend Track**, then independently refined to follow modern Python engineering best practices.
 
 ---
 
