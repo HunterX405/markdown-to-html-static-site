@@ -74,3 +74,21 @@ class TextNode:
     text: str
     text_type: TextType
     url: str | None = None
+
+    def to_html_node(self) -> LeafNode:
+        match self.text_type:
+            case TextType.TEXT:
+                return LeafNode(None, self.text)
+            case TextType.BOLD:
+                return LeafNode('b', self.text)
+            case TextType.ITALIC:
+                return LeafNode('i', self.text)
+            case TextType.CODE:
+                return LeafNode('code', self.text)
+            case TextType.LINK:
+                return LeafNode('a', self.text, {"href": self.url})
+            case TextType.IMAGE:
+                return LeafNode('img', '', {"src": self.url, "alt": self.text})
+            
+            case _:
+                raise ValueError("Invalid TextType for TextNode")

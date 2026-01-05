@@ -2,26 +2,6 @@ import re
 from htmlnode import HTMLNode, LeafNode, ParentNode, TextNode, TextType, BlockType
 
 
-def text_node_to_html_node(text_node: TextNode) -> LeafNode:
-    text = text_node.text
-    match text_node.text_type:
-        case TextType.TEXT:
-            return LeafNode(None, text)
-        case TextType.BOLD:
-            return LeafNode('b', text)
-        case TextType.ITALIC:
-            return LeafNode('i', text)
-        case TextType.CODE:
-            return LeafNode('code', text)
-        case TextType.LINK:
-            return LeafNode('a', text, {"href": text_node.url})
-        case TextType.IMAGE:
-            return LeafNode('img', '', {"src": text_node.url, "alt": text})
-        
-        case _:
-            raise ValueError("Invalid TextType for TextNode")
-
-
 def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: TextType) -> list[TextNode]:
     new_nodes = []
     for old_node in old_nodes:
@@ -144,7 +124,7 @@ def block_to_block_type(markdown: str) -> BlockType:
 
 
 def text_to_children(text: str) -> list[LeafNode]:
-    return [text_node_to_html_node(textnode) for textnode in text_to_textnodes(text)]
+    return [textnode.to_html_node() for textnode in text_to_textnodes(text)]
 
 
 def text_list_to_children(text: str) -> list[LeafNode]:
