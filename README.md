@@ -1,27 +1,57 @@
 ## 📄 Static Site Generator (Markdown to HTML) in Python
 
-A simple **static site generator built in Python** that converts Markdown files into HTML pages.
-This project was created as a **guided learning project from Boot.dev** to practice Python, file processing, and basic static site generation concepts.
-
-The generated site is currently deployed to **GitHub Pages** (https://hunterx405.github.io/markdown-to-html-static-site/).
+A **Python-based static site generator** that converts Markdown content into HTML pages using **Jinja2 templates** and modern Python practices.
+This project was originally built as a guided project from **Boot.dev** and later extended with cleaner architecture, improved tooling, and maintainable design patterns.
 
 ---
 
 ## ✨ Features
 
-* Converts Markdown (`.md`) files into HTML
-* Supports basic Markdown elements (headings, paragraphs, links, lists)
-* Processes directories of content
-* Outputs static HTML files ready for deployment
-* Simple, dependency-light Python implementation
+* Converts Markdown files into static HTML pages
+* Uses **Jinja2** for templated page rendering
+* Fully based on **`pathlib.Path`** for object-oriented file handling
+* Uses **`@dataclass`** to model HTML nodes and site structure
+* Clean separation between content, templates, and build logic
+* Supports static assets (images, CSS)
+* Output ready for **GitHub Pages** or any static hosting
 
 ---
 
-## 🛠 Tech Stack
+## 🧰 Tech Stack
 
-* Python 3
-* Standard Library (no heavy frameworks)
-* GitHub Pages (for deployment)
+* **Python 3.10+**
+* `pathlib.Path`
+* `dataclasses`
+* **Jinja2**
+* **uv** (project & dependency manager)
+* Markdown → HTML conversion
+* Shell scripts for build automation
+
+---
+
+## 📁 Project Structure
+
+```text
+.
+├── content/                  # Markdown source content
+├── docs/                     # Generated static site output
+├── src/                      # Core application logic
+│   ├── generate.py           # Site generation logic
+│   ├── htmlnode.py           # HTML node abstractions
+│   ├── md_to_html.py         # Markdown → HTML conversion
+│   ├── main.py               # Application entry point
+│   ├── test_htmlnode.py
+│   └── test_md_to_html.py
+├── static/                   # Static assets (copied to output)
+├── templates/                # Jinja2 HTML templates
+├── build.sh                  # Build script
+├── main.sh                   # Run script
+├── test.sh                   # Test runner
+├── pyproject.toml            # uv project configuration
+├── uv.lock
+├── README.md
+└── .gitignore
+```
 
 ---
 
@@ -29,7 +59,12 @@ The generated site is currently deployed to **GitHub Pages** (https://hunterx405
 
 ### Prerequisites
 
-* Python **3.10+** installed
+* **Python 3.10+**
+* **uv** installed
+
+  ```bash
+  pip install uv
+  ```
 
 ---
 
@@ -42,47 +77,68 @@ cd markdown-to-html-static-site
 
 ---
 
-### Run the Generator (using Python)
+### Install Dependencies
+
+```bash
+uv sync
+```
+
+---
+
+### Build the Site
+
+```bash
+./build.sh
+```
+
+The generated static site will be written to the `docs/` directory.
+
+---
+
+### Run Tests
+
+```bash
+./test.sh
+```
+
+### Build and Run the Site Locally
 
 ```bash
 ./main.sh
 ```
 
-> This will generate static HTML files in the output directory (e.g. `public/` or `docs/` depending on your setup) and deploy to a localhost server.
-
 ---
 
 ## 🌍 Deployment
 
-The generated HTML files can be deployed to **GitHub Pages**:
+The contents of the `docs/` directory are ready for deployment via **GitHub Pages**:
 
-1. Generate the site locally
-   
-```bash
-./build.sh
-```
+1. Generate the site
+2. Commit the `docs/` folder
+3. Configure GitHub Pages to serve from `/docs`
 
-2. Commit the output directory
-3. Configure GitHub Pages to serve from that directory
+---
 
-Example:
+## 🧠 Design Highlights
 
-```
-Settings → Pages → Source → /docs or /root
-```
+* **Pathlib-first design** for safer and clearer file operations
+* **Dataclass-based HTML node system** for structured rendering
+* Template-driven HTML generation via **Jinja2**
+* Clear separation of:
+
+  * Content (`content/`)
+  * Logic (`src/`)
+  * Output (`docs/`)
+  * Assets (`static/`)
 
 ---
 
 ## 📚 Learning Context
 
-This project was built as part of the **Boot.dev BackEnd Path - Build a Static Site Generator in Python Course** and focuses on:
+Built as part of the **Boot.dev Python & Software Engineering Track**, then independently refined to follow modern Python engineering best practices.
 
-* File I/O
-* Parsing and transforming text
-* Markdown to HTML nodes as python classes
-* HTML nodes to html syntax functions
-* Practical backend-style Python workflows
+---
 
 ## 📄 License
 
-This project is for learning purposes and is open for educational use.
+This project is intended for educational and portfolio use.
