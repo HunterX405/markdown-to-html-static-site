@@ -1,12 +1,18 @@
+# so type checkers won't throw a not defined warning for 
+# class value types referencing to themselves
+from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import override
 from enum import Enum
 
-@dataclass
+# slots=True so the class values are strictly the only ones initiated
+# spelling errors for class values throws an error 'node.tga' throws an error
+# can't add other values outside the class and saves memory
+@dataclass(slots=True)
 class HTMLNode:
     tag: str
     value: str | None
-    children: list | None = None
+    children: list[HTMLNode] | None = None
     props: dict[str, str] = field(default_factory=dict)
 
     def to_html(self):
@@ -17,7 +23,7 @@ class HTMLNode:
             return ''
         return "".join(f' {att}="{value}"' for att, value in self.props.items())
     
-@dataclass
+@dataclass(slots=True)
 class LeafNode(HTMLNode):
     value: str
     children: None = field(default=None, init=False)
@@ -33,7 +39,7 @@ class LeafNode(HTMLNode):
             return f'<{self.tag}{self.props_to_html()}>'
         return f'<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>'
     
-@dataclass
+@dataclass(slots=True)
 class ParentNode(HTMLNode):
     value: None = field(default=None, init=False)
     children: list[HTMLNode] = field(default_factory=list)
@@ -42,8 +48,8 @@ class ParentNode(HTMLNode):
     def to_html(self):
         if not self.tag:
             raise ValueError("tag is required")
-        if self.children is None:
-            raise ValueError("children is not provided")
+        if not self.children:
+            raise ValueError("ParentNode must have at least one child")
         
         html = f'<{self.tag}{self.props_to_html()}>'
         for child in self.children:
@@ -69,7 +75,8 @@ class BlockType(Enum):
     ULIST = "unordered_list"
     OLIST = "ordered_list"
 
-@dataclass
+
+@dataclass(slots=True)
 class TextNode:
     text: str
     text_type: TextType
