@@ -59,7 +59,7 @@ This project was originally built as a guided project from **Boot.dev** and late
 
 ### Prerequisites
 
-* **Python 3.10+**
+* **Python 3.12+**
 * **uv** installed
 
   ```bash
