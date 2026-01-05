@@ -1,10 +1,13 @@
+from dataclasses import dataclass, field
+from typing import override
+from enum import Enum
 
-class HTMLNode():
-    def __init__(self, tag=None, value=None, children=None, props=None):
-        self.tag = tag
-        self.value = value
-        self.children = children
-        self.props = props
+@dataclass
+class HTMLNode:
+    tag: str
+    value: str | None
+    children: list | None = None
+    props: dict[str, str] = field(default_factory=dict)
 
     def to_html(self):
         raise NotImplementedError()
@@ -14,20 +17,12 @@ class HTMLNode():
             return ''
         return "".join(f' {att}="{value}"' for att, value in self.props.items())
     
-    def __repr__(self):
-        return f'HTMLNode({self.tag}, {self.value}, {self.children}, {self.props})'
-    
-    def __eq__(self, node):
-        return (self.tag == node.tag and
-                self.value == node.value and
-                self.children == node.children and
-                self.props == node.props)
-    
-
+@dataclass
 class LeafNode(HTMLNode):
-    def __init__(self, tag, value, props=None):
-        super().__init__(tag, value, None, props)
+    value: str
+    children: None = field(default=None, init=False)
 
+    @override
     def to_html(self):
         # only img have a '' value.
         if not self.value and self.tag != 'img':
@@ -38,12 +33,12 @@ class LeafNode(HTMLNode):
             return f'<{self.tag}{self.props_to_html()}>'
         return f'<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>'
     
-
-
+@dataclass
 class ParentNode(HTMLNode):
-    def __init__(self, tag, children, props=None):
-        super().__init__(tag, None, children, props)
+    value: None = field(default=None, init=False)
+    children: list[HTMLNode] = field(default_factory=list)
 
+    @override
     def to_html(self):
         if not self.tag:
             raise ValueError("tag is required")
@@ -56,3 +51,26 @@ class ParentNode(HTMLNode):
         html += f'</{self.tag}>'
         
         return html
+    
+
+class TextType(Enum):
+    TEXT = "text"
+    BOLD = "bold"
+    ITALIC = "italic"
+    CODE = "code"
+    LINK = "link"
+    IMAGE = "image"
+
+class BlockType(Enum):
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    ULIST = "unordered_list"
+    OLIST = "ordered_list"
+
+@dataclass
+class TextNode:
+    text: str
+    text_type: TextType
+    url: str | None = None

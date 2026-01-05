@@ -6,8 +6,7 @@ from md_to_html import (text_node_to_html_node, extract_markdown_links, extract_
                         block_to_html_node, markdown_to_html_node,
                         extract_title
                         )
-from textnode import TextNode, TextType, BlockType
-from htmlnode import ParentNode, LeafNode
+from htmlnode import ParentNode, LeafNode, TextType, TextNode, BlockType
 
 
 class TestMDtoHTMLNode(unittest.TestCase):

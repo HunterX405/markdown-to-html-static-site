@@ -1,14 +1,11 @@
 import unittest
 
-from htmlnode import HTMLNode, LeafNode, ParentNode
+from htmlnode import HTMLNode, LeafNode, ParentNode, TextType, TextNode
 
 
 class TestHTMLNode(unittest.TestCase):
-    def test_none(self):
-        node = HTMLNode()
-        node2 = HTMLNode()
-        self.assertEqual(node, node2)
 
+    # HTMLNode() testcases
     def test_eq(self):
         node = HTMLNode("p", "This is a paragraph.")
         node2 = HTMLNode("p", "This is a paragraph.")
@@ -20,6 +17,9 @@ class TestHTMLNode(unittest.TestCase):
         node = HTMLNode("a", "Google.com", None, props)
         node2 = HTMLNode("a", "Google.com", None, props)
         self.assertEqual(node, node2)
+
+    def test_none(self):
+        self.assertRaises(TypeError, HTMLNode)
     
     def test_props_to_html(self):
         props = {"href": "https://www.google.com",
@@ -37,6 +37,8 @@ class TestHTMLNode(unittest.TestCase):
         node = HTMLNode("p", "This is a paragraph.")
         node2 = HTMLNode("a", "Google.com", None, props)
         self.assertNotEqual(node, node2)
+
+    # LeafNode() testcases
 
     def test_leaf_to_html_p(self):
         node = LeafNode("p", "Hello, world!")
@@ -61,6 +63,8 @@ class TestHTMLNode(unittest.TestCase):
     def test_leaf_no_args(self):
         self.assertRaises(TypeError, LeafNode)
 
+    # ParentNode() testcases
+
     def test_to_html_with_children(self):
         child_node = LeafNode("span", "child")
         parent_node = ParentNode("div", [child_node])
@@ -74,6 +78,28 @@ class TestHTMLNode(unittest.TestCase):
             parent_node.to_html(),
             "<div><span><b>grandchild</b></span></div>",
         )
+
+    # TextNode() testcases
+
+    def test_textnode_eq(self):
+        node = TextNode("This is a text node", TextType.BOLD)
+        node2 = TextNode("This is a text node", TextType.BOLD)
+        self.assertEqual(node, node2)
+
+    def test_textnode_not_eq(self):
+        node = TextNode('This is some anchor text', TextType.LINK, 'https://www.boot.dev')
+        node2 = TextNode("This is a text node", TextType.BOLD)
+        self.assertNotEqual(node, node2)
+
+    def test_textnode_not_eq_type(self):
+        node = TextNode('This is a text node', TextType.ITALIC)
+        node2 = TextNode("This is a text node", TextType.BOLD)
+        self.assertNotEqual(node, node2)
+
+    def test_textnode_diff_link(self):
+        node = TextNode('This is some anchor text', TextType.LINK, 'https://www.boot.dev')
+        node2 = TextNode('This is some anchor text', TextType.LINK, 'https://www.boot.dev/u/hunterx405')
+        self.assertNotEqual(node, node2)
 
 
 if __name__ == "__main__":
