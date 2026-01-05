@@ -1,1 +1,1 @@
-python3 src/main.py "/markdown-to-html-static-site/"
+uv run src/main.py "/markdown-to-html-static-site/"
