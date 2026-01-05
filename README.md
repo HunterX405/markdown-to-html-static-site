@@ -3,6 +3,8 @@
 A **Python-based static site generator** that converts Markdown content into HTML pages using **Jinja2 templates** and modern Python practices.
 This project was originally built as a guided project from **Boot.dev** and later extended with cleaner architecture, improved tooling, and maintainable design patterns.
 
+**Live Demo Site:** https://hunterx405.github.io/markdown-to-html-static-site/
+
 ---
 
 ## ✨ Features
